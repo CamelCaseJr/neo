@@ -2,12 +2,14 @@ package org.acme.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.print.attribute.standard.Media;
 
 import org.acme.domain.dtos.NeoObjectResponse;
+import org.acme.domain.mapper.NeoObjectMapper;
 import org.acme.domain.models.NeoObject;
 import org.acme.service.NeoService;
 
@@ -37,6 +39,9 @@ public class NeoController {
     @Inject
     NeoService neoService;
 
+    @Inject
+    NeoObjectMapper neoMapper;
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response listar(@QueryParam("pagina") @DefaultValue("0") int pagina,
@@ -48,16 +53,22 @@ public class NeoController {
                 ? neoService.listarPerigosos(pagina, tamanho, perigoso)
                 : neoService.listar(pagina, tamanho);
 
-        List<NeoObjectResponse> resposta = lista.stream()
-                .map(neo -> new NeoObjectResponse(
-                        neo,
-                        uriInfo.getBaseUriBuilder()
-                                .path("api/neos")
-                                .path(String.valueOf(neo.id))
-                                .build()))
-                .toList();
+        List<NeoObjectResponse> resp = new ArrayList<>();
 
-        return Response.ok(resposta).build();
+        for (int i = 0; i < lista.size(); i++) {
+            NeoObject neo = lista.get(i);
+            URI selfUri = uriInfo.getBaseUriBuilder()
+                    .path("api/neos")
+                    .path(String.valueOf(neo.id))
+                    .build();
+            NeoObjectResponse respInterno = neoMapper.toResponse(neo, selfUri);
+            // Substitui o NeoObject pelo NeoObjectResponse na lista
+            // Isso é um pouco hacky, mas funciona para este exemplo
+            // Em um caso real, você provavelmente retornaria uma lista de NeoObjectResponse diretamente
+            resp.add(respInterno);
+        }
+
+        return Response.ok().entity(resp).build();
     }
 
     @GET
@@ -67,12 +78,12 @@ public class NeoController {
         if (ent == null)
             throw new NotFoundException("NEO não encontrado");
 
-        NeoObjectResponse resp = new NeoObjectResponse(
-                ent,
-                uriInfo.getBaseUriBuilder()
-                        .path("api/neos")
-                        .path(String.valueOf(ent.id))
-                        .build());
+        URI selfUri = uriInfo.getBaseUriBuilder()
+                .path("api/neos")
+                .path(String.valueOf(ent.id))
+                .build();
+
+        NeoObjectResponse resp = neoMapper.toResponse(ent, selfUri);
 
         return Response.ok(resp).build();
     }
@@ -86,7 +97,7 @@ public class NeoController {
                 .path(String.valueOf(neo.id))
                 .build();
 
-        NeoObjectResponse resp = new NeoObjectResponse(neo, self);
+        NeoObjectResponse resp = neoMapper.toResponse(neo, self);
 
         return Response.created(self) 
                 .entity(resp)

@@ -10,7 +10,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 
 @RegisterRestClient(configKey = "nasa-neows")
-@Path("/neo")
 public interface NeoWsClient {
 
   @GET

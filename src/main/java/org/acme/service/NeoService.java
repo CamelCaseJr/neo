@@ -19,6 +19,7 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
@@ -36,6 +37,7 @@ public class NeoService {
     @Inject
     ArmazenamentoMinioService minioService;
 
+    @Transactional
     public int importarFeed(LocalDate inicio, LocalDate fim) {
         String start = inicio.format(DateTimeFormatter.ISO_DATE);
         String end = fim.format(DateTimeFormatter.ISO_DATE);
@@ -55,7 +57,8 @@ public class NeoService {
         }
     }
 
-    private int normalizarPersistir(FeedResponse feed, String s3key) {
+    @Transactional
+    protected int normalizarPersistir(FeedResponse feed, String s3key) {
         int count = 0;
         for (Map.Entry<String, List<FeedResponse.Neo>> dia : feed.nearEarthObjects.entrySet()) {
             for (FeedResponse.Neo n : dia.getValue()) {
@@ -106,7 +109,7 @@ public class NeoService {
     public List<NeoObject> listar(int pagina, int tamanho) {
         return neoRepo.findAll().page(pagina, tamanho).list();
     }
-
+    @Transactional
     public boolean deleteById(Long id) {
         NeoObject ent = neoRepo.findById(id);
         if (ent != null) {
@@ -132,11 +135,10 @@ public class NeoService {
         return ent;
 
     }
-
+    @Transactional
     public void criar(NeoObject neo) {
         neoRepo.persist(neo);
     }
-
     public NeoObject obterPorId(Long id) {
         NeoObject neoObject = neoRepo.findById(id);
         return neoObject;

@@ -3,11 +3,17 @@ import java.net.URI;
 
 import org.acme.domain.models.NeoObject;
 
+import io.quarkus.arc.All;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
+@Builder
+@AllArgsConstructor
 public class NeoObjectResponse {
 
     private Long id;
@@ -20,7 +26,11 @@ public class NeoObjectResponse {
     private String planetaAlvo;
     private URI self;
 
-    // construtor que recebe o NeoObject e a URI
+    // Construtor vazio (necessário para Jackson)
+    public NeoObjectResponse() {
+    }
+
+    // Construtor que recebe o NeoObject e a URI
     public NeoObjectResponse(NeoObject neo, URI self) {
         this.id = neo.id;
         this.neoId = neo.neoId;
@@ -32,4 +42,7 @@ public class NeoObjectResponse {
         this.planetaAlvo = neo.planetaAlvo;
         this.self = self;
     }
+
+
+
 }

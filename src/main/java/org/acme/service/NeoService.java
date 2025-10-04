@@ -45,7 +45,7 @@ public class NeoService {
 
         try {
             String json = mapper.writeValueAsString(feed);
-            String s3key = minioService.salvarJsonBruto(json, inicio);
+            String s3key = minioService.salvarCsvBruto(json, inicio);
 
             int inseridos = normalizarPersistir(feed, s3key);
 

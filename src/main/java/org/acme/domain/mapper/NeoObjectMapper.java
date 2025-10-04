@@ -27,6 +27,6 @@ public interface NeoObjectMapper {
         
         return neoList.stream()
                 .map(neo -> toResponse(neo, uriBuilder.apply(neo)))
-                .toList();
+                .collect(Collectors.toList());
     }
 } 

@@ -150,6 +150,7 @@ public class ArmazenamentoMinioService {
             this.neoId = neoId;
             this.nome = nome;
             this.magnitudeAbsoluta = magnitudeAbsoluta;
+            this.diametroMinM = diametroMinM;
             this.diametroMaxM = diametroMaxM;
             this.ehPotencialmentePerigoso = ehPotencialmentePerigoso;
             this.dataPrimeiraAproximacao = dataPrimeiraAproximacao;

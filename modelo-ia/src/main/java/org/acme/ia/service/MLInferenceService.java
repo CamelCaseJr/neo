@@ -25,10 +25,16 @@ import weka.core.SerializationHelper;
 public class MLInferenceService {
 
     @Inject S3Client s3;
-    @ConfigProperty(name = "neo.minio.bucket") String bucket;
+
+    @ConfigProperty(name = "neo.minio.bucket")
+    String bucket;
+
+    // <<< (1) Threshold configurável. Se não tiver no application.properties, usa 0.80 por padrão.
+    @ConfigProperty(name = "ml.threshold", defaultValue = "0.80")
+    double TAU;
 
     private volatile Classifier model;
-    private volatile Instances header; // estrutura dos atributos para criar instâncias novas
+    private volatile Instances header; // estrutura de atributos
 
     @PostConstruct
     void init() {
@@ -43,7 +49,6 @@ public class MLInferenceService {
         ListObjectsV2Response res = s3.listObjectsV2(ListObjectsV2Request.builder()
                 .bucket(bucket).prefix("models/").build());
 
-        // pega o par (.model + .header) mais recente
         var latestModel = res.contents().stream()
                 .filter(o -> o.key().endsWith(".model"))
                 .max(Comparator.comparing(S3Object::lastModified))
@@ -52,7 +57,6 @@ public class MLInferenceService {
         String base = latestModel.key().substring(0, latestModel.key().length() - ".model".length());
         String headerKey = base + ".header";
 
-        // baixa os dois
         Path tmpModel = Files.createTempFile("neows-weka-", ".model");
         try (InputStream is = s3.getObject(GetObjectRequest.builder()
                 .bucket(bucket).key(latestModel.key()).build())) {
@@ -64,14 +68,14 @@ public class MLInferenceService {
             Files.copy(is, tmpHeader, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
 
-        // carrega
-        this.model = (Classifier) SerializationHelper.read(tmpModel.toString());
-        this.header = (Instances) SerializationHelper.read(tmpHeader.toString());
+        this.model  = (Classifier) SerializationHelper.read(tmpModel.toString());
+        this.header = (Instances)  SerializationHelper.read(tmpHeader.toString());
 
         Files.deleteIfExists(tmpModel);
         Files.deleteIfExists(tmpHeader);
 
         Log.info("Modelo carregado: " + latestModel.key());
+        Log.infof("Threshold (TAU) carregado da config: %.3f", TAU);
     }
 
     public PredictionResult predict(FeaturesInput in) throws Exception {
@@ -79,7 +83,7 @@ public class MLInferenceService {
             throw new IllegalStateException("Modelo não carregado. Treine/Carregue primeiro.");
         }
 
-        // cria uma instância com o mesmo esquema do header
+        // Monta a instância com o mesmo schema do header
         Instance inst = new DenseInstance(header.numAttributes());
         inst.setDataset(header);
 
@@ -88,16 +92,16 @@ public class MLInferenceService {
         setIfExists(inst, "diametroMaxM",      in.diametroMaxM);
         setIfExists(inst, "velocidadeKmS",     in.velocidadeKmS);
 
-        double clsIdx = model.classifyInstance(inst);
-        String predicted = header.classAttribute().value((int) clsIdx);
-
+        // Em vez de aceitar o rótulo "seco", usamos a distribuição de probabilidades
         double[] dist = model.distributionForInstance(inst);
-        // probabilidade da classe "true" (se existir)
         int idxTrue = header.classAttribute().indexOfValue("true");
         double pTrue = (idxTrue >= 0 && idxTrue < dist.length) ? dist[idxTrue] : Double.NaN;
 
+        // <<< (1) Decisão por threshold: se pTrue >= TAU, marcamos como perigoso ("true").
+        boolean perigoso = !Double.isNaN(pTrue) && pTrue >= TAU;
+
         PredictionResult out = new PredictionResult();
-        out.preditoPerigoso = "true".equalsIgnoreCase(predicted);
+        out.preditoPerigoso = perigoso;
         out.probabilidadePerigoso = pTrue;
         return out;
     }
@@ -110,7 +114,7 @@ public class MLInferenceService {
         }
     }
 
-    // ===== DTOs =====
+    // DTOs
     public static class FeaturesInput {
         public Double magnitudeAbsoluta;
         public Double diametroMinM;

@@ -37,9 +37,30 @@ public class ArmazenamentoMinioService {
 
     public void criarBucket() {
         try {
+            // Verifica se o bucket existe
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
+            Log.infof("Bucket '%s' já existe.", bucket);
+
         } catch (S3Exception e) {
-            s3Client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+            if (e.statusCode() == 404) {
+                // 404 = bucket não encontrado → criar
+                try {
+                    s3Client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+                    Log.infof("Bucket '%s' criado com sucesso.", bucket);
+                } catch (S3Exception ce) {
+                    Log.errorf(ce, "Falha ao criar o bucket '%s': %s", bucket, ce.awsErrorDetails().errorMessage());
+                    throw new RuntimeException("Erro ao criar bucket: " + ce.getMessage(), ce);
+                }
+            } else {
+                // Outro tipo de erro (ex: permissão, endpoint, credencial inválida)
+                Log.errorf(e, "Erro ao verificar existência do bucket '%s': %s",
+                        bucket, e.awsErrorDetails().errorMessage());
+                throw new RuntimeException("Falha ao verificar bucket: " + e.getMessage(), e);
+            }
+        } catch (Exception ex) {
+            // Falhas genéricas (problema de rede, etc.)
+            Log.errorf(ex, "Erro inesperado ao acessar o bucket '%s'", bucket);
+            throw new RuntimeException("Erro inesperado ao acessar bucket: " + ex.getMessage(), ex);
         }
     }
 
@@ -60,7 +81,6 @@ public class ArmazenamentoMinioService {
 
     public String salvarCsvBruto(String conteudoJson, LocalDate data) throws Exception {
         criarBucket();
-    
 
         // Converter JSON para objeto FeedResponse
         ObjectMapper jsonMapper = new ObjectMapper();
@@ -90,7 +110,8 @@ public class ArmazenamentoMinioService {
                             (neo.closeApproachData != null && !neo.closeApproachData.isEmpty()
                                     && neo.closeApproachData.get(0).relativeVelocity != null)
                                             ? Double.parseDouble(
-                                                DF.format(Double.parseDouble(neo.closeApproachData.get(0).relativeVelocity.kmPerSec)))
+                                                    DF.format(Double.parseDouble(
+                                                            neo.closeApproachData.get(0).relativeVelocity.kmPerSec)))
                                             : null,
                             (neo.closeApproachData != null && !neo.closeApproachData.isEmpty())
                                     ? neo.closeApproachData.get(0).orbitingBody

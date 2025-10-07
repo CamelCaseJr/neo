@@ -1,5 +1,7 @@
 package org.acme.domain.dtos;
+
 import java.net.URI;
+import java.time.OffsetDateTime;
 
 import org.acme.domain.models.NeoObject;
 
@@ -23,6 +25,8 @@ public class NeoObjectResponse {
     private Double diametroMinM;
     private Double diametroMaxM;
     private boolean ehPotencialmentePerigoso;
+    private Double velocidadeKmS;
+    private OffsetDateTime dataPrimeiraAproximacao;
     private String planetaAlvo;
     private URI self;
 
@@ -39,10 +43,10 @@ public class NeoObjectResponse {
         this.diametroMinM = neo.diametroMinM;
         this.diametroMaxM = neo.diametroMaxM;
         this.ehPotencialmentePerigoso = neo.ehPotencialmentePerigoso;
+        this.velocidadeKmS = neo.velocidadeKmS;
+        this.dataPrimeiraAproximacao = neo.dataPrimeiraAproximacao;
         this.planetaAlvo = neo.planetaAlvo;
         this.self = self;
     }
-
-
 
 }

@@ -71,7 +71,7 @@ public class MLTrainingService {
                 Log.info("Lendo: " + obj.key());
                 try (InputStream is = s3.getObject(GetObjectRequest.builder()
                         .bucket(bucket).key(obj.key()).build());
-                     var reader = new java.io.BufferedReader(new java.io.InputStreamReader(is))) {
+                        var reader = new java.io.BufferedReader(new java.io.InputStreamReader(is))) {
                     String linha;
                     boolean primeiraLinhaArquivo = true;
                     while ((linha = reader.readLine()) != null) {
@@ -102,6 +102,7 @@ public class MLTrainingService {
         if (all == null || all.isEmpty())
             throw new IllegalStateException("Dataset ficou vazio.");
 
+        // IMPORTANTE
         // define classe
         int classIndex = all.attribute(RESPONSE_COLUMN).index();
         all.setClassIndex(classIndex);
@@ -111,11 +112,11 @@ public class MLTrainingService {
                 all.classAttribute().name(), all.classIndex());
 
         // 3) Split estratificado 70/30
-        long seed = 123L;
+        long seed = 123L;// MINHA SEMENTE
         double trainRatio = 0.70;
         var split = stratifiedHoldout(all, trainRatio, seed);
         Instances train = split.train;
-        Instances test  = split.test;
+        Instances test = split.test;
 
         Log.infof("Train=%d, Test=%d (estratificado 70/30)", train.numInstances(), test.numInstances());
 
@@ -130,17 +131,17 @@ public class MLTrainingService {
         Log.info("Ordem dos valores da classe: " + ordem);
 
         int idxFalse = clsAttr.indexOfValue("false");
-        int idxTrue  = clsAttr.indexOfValue("true");
+        int idxTrue = clsAttr.indexOfValue("true");
         if (idxFalse < 0 || idxTrue < 0) {
             throw new IllegalStateException("A classe precisa ter os valores 'false' e 'true'.");
         }
 
         // CostMatrix 2x2: custo[real][previsto]
         CostMatrix cm = new CostMatrix(2);
-        cm.setElement(idxTrue,  idxFalse, COST_FN); // FN: real=true, previsto=false
-        cm.setElement(idxFalse, idxTrue,  COST_FP); // FP: real=false, previsto=true
+        cm.setElement(idxTrue, idxFalse, COST_FN); // FN: real=true, previsto=false
+        cm.setElement(idxFalse, idxTrue, COST_FP); // FP: real=false, previsto=true
         cm.setElement(idxFalse, idxFalse, 0.0);
-        cm.setElement(idxTrue,  idxTrue,  0.0);
+        cm.setElement(idxTrue, idxTrue, 0.0);
 
         Log.infof("Custos aplicados: FN=%.2f, FP=%.2f", COST_FN, COST_FP);
 
@@ -175,12 +176,12 @@ public class MLTrainingService {
         Path tmpModel = Files.createTempFile("neows-weka-", ".model");
         Path tmpHeader = Files.createTempFile("neows-weka-", ".header");
 
-        SerializationHelper.write(tmpModel.toString(), csc);   // salva o CSC
-        Instances header = new Instances(train, 0);            // mesmo schema, sem dados
+        SerializationHelper.write(tmpModel.toString(), csc); // salva o CSC
+        Instances header = new Instances(train, 0); // mesmo schema, sem dados
         SerializationHelper.write(tmpHeader.toString(), header);
 
         String ts = String.valueOf(System.currentTimeMillis());
-        String modelKey  = "models/weka-rf-csc-" + ts + ".model";
+        String modelKey = "models/weka-rf-csc-" + ts + ".model";
         String headerKey = "models/weka-rf-csc-" + ts + ".header";
 
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(modelKey)
@@ -210,7 +211,8 @@ public class MLTrainingService {
 
         // mapa classe -> índices
         Map<String, List<Integer>> byClass = new LinkedHashMap<>();
-        for (String v : classValues) byClass.put(v, new ArrayList<>());
+        for (String v : classValues)
+            byClass.put(v, new ArrayList<>());
 
         for (int i = 0; i < all.numInstances(); i++) {
             String v = all.instance(i).stringValue(all.classIndex());
@@ -218,7 +220,7 @@ public class MLTrainingService {
         }
 
         Instances train = new Instances(all, 0);
-        Instances test  = new Instances(all, 0);
+        Instances test = new Instances(all, 0);
 
         for (var e : byClass.entrySet()) {
             List<Integer> idxs = e.getValue();
@@ -226,10 +228,12 @@ public class MLTrainingService {
 
             int nTrain = (int) Math.round(idxs.size() * trainRatio);
             var trainIdxs = idxs.subList(0, nTrain);
-            var testIdxs  = idxs.subList(nTrain, idxs.size());
+            var testIdxs = idxs.subList(nTrain, idxs.size());
 
-            for (int id : trainIdxs) train.add(all.instance(id));
-            for (int id : testIdxs)  test.add(all.instance(id));
+            for (int id : trainIdxs)
+                train.add(all.instance(id));
+            for (int id : testIdxs)
+                test.add(all.instance(id));
         }
 
         train.setClassIndex(all.classIndex());
@@ -239,7 +243,11 @@ public class MLTrainingService {
 
     private static class StratifiedSplit {
         final Instances train, test;
-        StratifiedSplit(Instances t, Instances s) { this.train = t; this.test = s; }
+
+        StratifiedSplit(Instances t, Instances s) {
+            this.train = t;
+            this.test = s;
+        }
     }
 
     // ===== utilitários S3 =====
@@ -267,7 +275,10 @@ public class MLTrainingService {
     public static class TrainingResult {
         public String evaluation;
         public String modelKey;
-        public TrainingResult() {}
+
+        public TrainingResult() {
+        }
+
         public TrainingResult(String evaluation, String modelKey) {
             this.evaluation = evaluation;
             this.modelKey = modelKey;

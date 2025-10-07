@@ -30,7 +30,7 @@ public class MLInferenceService {
     String bucket;
 
     // <<< (1) Threshold configurável. Se não tiver no application.properties, usa 0.80 por padrão.
-    @ConfigProperty(name = "ml.threshold", defaultValue = "0.80")
+    @ConfigProperty(name = "ml.threshold", defaultValue = "0.60")
     double TAU;
 
     private volatile Classifier model;

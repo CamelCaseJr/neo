@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO Dashboard - Near Earth Objects</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🌍</div>
+            <h1>NEO Monitor</h1>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="neos.html" class="nav-item">
+                <span class="nav-icon">🪨</span>
+                <span>NEOs</span>
+            </a>
+            <a href="ml.html" class="nav-item">
+                <span class="nav-icon">🤖</span>
+                <span>Machine Learning</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Sistemas Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h2>Dashboard</h2>
+                <p class="subtitle">Monitoramento em tempo real de objetos próximos à Terra</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="refreshData()">
+                    <span>🔄</span>
+                    Atualizar
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">👤</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">🪨</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="totalNeos">-</h3>
+                    <p class="stat-label">Total de NEOs</p>
+                    <span class="stat-change positive">+12% vs mês anterior</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon red">⚠️</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="dangerousNeos">-</h3>
+                    <p class="stat-label">NEOs Perigosos</p>
+                    <span class="stat-change negative">Monitoramento ativo</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">✓</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="safeNeos">-</h3>
+                    <p class="stat-label">NEOs Seguros</p>
+                    <span class="stat-change neutral">Status normal</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">🤖</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="mlAccuracy">-</h3>
+                    <p class="stat-label">Precisão do Modelo</p>
+                    <span class="stat-change positive" id="mlStatus">Modelo ativo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Distribuição de Periculosidade</h3>
+                    <select id="chartPeriod" class="select-input">
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="30" selected>Últimos 30 dias</option>
+                        <option value="90">Últimos 90 dias</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dangerChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Velocidade Relativa</h3>
+                    <span class="badge">km/h</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="velocityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Diâmetro dos NEOs</h3>
+                    <span class="badge">metros</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="diameterChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>Distância da Terra</h3>
+                    <span class="badge">km</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent NEOs Table -->
+        <div class="table-card">
+            <div class="card-header">
+                <h3>NEOs Recentes</h3>
+                <button class="btn btn-sm btn-primary" onclick="window.location.href='neos.html'">
+                    Ver todos
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Diâmetro (m)</th>
+                            <th>Velocidade (km/h)</th>
+                            <th>Distância (km)</th>
+                            <th>Perigoso</th>
+                            <th>Data Aproximação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="neosTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">
+                                <div class="loader"></div>
+                                Carregando dados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

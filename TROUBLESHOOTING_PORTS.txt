@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════════════════════════════
+🚨 PROBLEMA IDENTIFICADO: Porta 8081 já está em uso
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ SOLUÇÃO RÁPIDA:
+
+Execute estes comandos no terminal onde tentou iniciar o modelo-ia:
+
+1️⃣ Primeiro, mate o processo que está usando a porta 8081:
+
+# Opção A (funciona na maioria dos casos):
+sudo lsof -ti:8081 | xargs kill -9
+
+# Opção B (se a opção A não funcionar):
+sudo fuser -k 8081/tcp
+
+# Opção C (verificar qual processo está usando):
+sudo netstat -tulpn | grep 8081
+
+2️⃣ Depois, reinicie o modelo-ia:
+
+cd /mnt/c/Users/junior/Documents/fiap/neo/modelo-ia
+./mvnw quarkus:dev
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔄 OU USE O SCRIPT AUTOMÁTICO:
+
+chmod +x restart.sh
+./restart.sh
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 VERIFICAR STATUS DAS PORTAS:
+
+Frontend:  sudo netstat -tulpn | grep 3000  (deve estar rodando Python)
+Neo-core:  sudo netstat -tulpn | grep 8080  (deve estar rodando Java/Quarkus)
+Modelo-IA: sudo netstat -tulpn | grep 8081  (deve estar livre ou rodando Java/Quarkus)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ ARQUIVOS ATUALIZADOS:
+
+1. neo-core/src/main/resources/application.properties
+   → CORS configurado para aceitar requisições do localhost:3000
+
+2. modelo-ia/src/main/resources/application.properties
+   → CORS configurado para aceitar requisições do localhost:3000
+
+3. modelo-ia/restart.sh
+   → Script para matar processo e reiniciar automaticamente
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 APÓS REINICIAR, VOCÊ DEVE VER:
+
+Terminal 1: Frontend rodando na porta 3000 (Python HTTP server)
+Terminal 2: neo-core rodando na porta 8080 (Quarkus)
+Terminal 3: modelo-ia rodando na porta 8081 (Quarkus)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🌐 URLs PARA TESTAR:
+
+Frontend:  http://localhost:3000/index.html
+Neo-core:  http://localhost:8080/q/swagger-ui
+Modelo-IA: http://localhost:8081/q/swagger-ui
+
+═══════════════════════════════════════════════════════════════════════════════

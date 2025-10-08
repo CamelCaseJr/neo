@@ -125,12 +125,12 @@ function updateMLStats(result) {
 }
 
 async function makePrediction() {
+    const magnitude = parseFloat(document.getElementById('predMagnitude').value);
     const diameterMin = parseFloat(document.getElementById('predDiameterMin').value);
     const diameterMax = parseFloat(document.getElementById('predDiameterMax').value);
     const velocity = parseFloat(document.getElementById('predVelocity').value);
-    const distance = parseFloat(document.getElementById('predDistance').value);
     
-    if (!diameterMin || !diameterMax || !velocity || !distance) {
+    if (!magnitude || !diameterMin || !diameterMax || !velocity) {
         utils.showToast('Por favor, preencha todos os campos', 'error');
         return;
     }
@@ -144,18 +144,33 @@ async function makePrediction() {
     `;
     
     try {
+        const payload = {
+            magnitudeAbsoluta: magnitude,
+            diametroMinM: diameterMin,
+            diametroMaxM: diameterMax,
+            velocidadeKmS: velocity
+        };
+        
+        console.log('Sending prediction request:', payload);
+        
         const result = await fetchAPI(API.predict(), {
             method: 'POST',
-            body: JSON.stringify({
-                estimatedDiameterMin: diameterMin / 1000, // Convert to km
-                estimatedDiameterMax: diameterMax / 1000, // Convert to km
-                relativeVelocity: velocity,
-                missDistance: distance
-            })
+            body: JSON.stringify(payload)
         });
         
-        const isDangerous = result.prediction === 1 || result.prediction === true;
-        const probability = result.probability || (isDangerous ? 0.85 : 0.15);
+        console.log('Prediction result:', result);
+        
+        // Suporta diferentes formatos de resposta da API
+        const isDangerous = result.preditoPerigoso === true || 
+                           result.prediction === 1 || 
+                           result.prediction === true || 
+                           result.isPotentiallyHazardous === true ||
+                           result.ehPotencialmentePerigoso === true;
+        
+        const probability = result.probabilidadePerigoso !== undefined ? result.probabilidadePerigoso : 
+                          (result.probability !== undefined ? result.probability : 
+                          (result.confidence !== undefined ? result.confidence : 
+                          (isDangerous ? 0.85 : 0.15)));
         
         resultDiv.className = `result-box ${isDangerous ? 'error' : 'success'}`;
         resultDiv.innerHTML = `
@@ -168,28 +183,46 @@ async function makePrediction() {
                     </span>
                 </div>
                 <div class="info-item">
-                    <strong>Probabilidade:</strong>
+                    <strong>Confiança:</strong>
                     <span>${utils.formatNumber(probability * 100)}%</span>
                 </div>
+                <div class="info-item">
+                    <strong>Magnitude H:</strong>
+                    <span>${magnitude.toFixed(2)}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Velocidade:</strong>
+                    <span>${velocity.toFixed(2)} km/s</span>
+                </div>
             </div>
-            <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted);">
-                ${isDangerous 
-                    ? 'Este NEO apresenta características que indicam periculosidade potencial. Monitoramento contínuo é recomendado.'
-                    : 'Este NEO não apresenta características de periculosidade significativa.'}
-            </p>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem;">
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
+                    ${isDangerous 
+                        ? '⚠️ Este NEO apresenta características que indicam periculosidade potencial. Monitoramento contínuo é recomendado.'
+                        : '✓ Este NEO não apresenta características de periculosidade significativa com base nos parâmetros fornecidos.'}
+                </p>
+            </div>
         `;
         
-        utils.showToast('Predição realizada!', 'success');
+        utils.showToast('Predição realizada com sucesso!', 'success');
         
     } catch (error) {
         console.error('Error making prediction:', error);
         resultDiv.className = 'result-box error';
         resultDiv.innerHTML = `
             <h4>❌ Erro na Predição</h4>
-            <p>${error.message}</p>
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
-                Certifique-se de que o modelo foi treinado e está carregado.
-            </p>
+            <p style="color: var(--danger); margin-top: 0.5rem;">${error.message}</p>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem;">
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.5rem 0;">
+                    <strong>Certifique-se de que:</strong>
+                </p>
+                <ul style="font-size: 0.875rem; color: var(--text-muted); margin: 0; padding-left: 1.5rem;">
+                    <li>O modelo foi treinado (use "Treinar Modelo")</li>
+                    <li>O serviço de ML está rodando na porta 8081</li>
+                    <li>Todos os campos foram preenchidos corretamente</li>
+                    <li>Os valores estão em unidades corretas (m para diâmetro, km/s para velocidade)</li>
+                </ul>
+            </div>
         `;
         utils.showToast('Erro ao fazer predição', 'error');
     }

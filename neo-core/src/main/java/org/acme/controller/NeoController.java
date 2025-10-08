@@ -64,7 +64,8 @@ public class NeoController {
             NeoObjectResponse respInterno = neoMapper.toResponse(neo, selfUri);
             // Substitui o NeoObject pelo NeoObjectResponse na lista
             // Isso é um pouco hacky, mas funciona para este exemplo
-            // Em um caso real, você provavelmente retornaria uma lista de NeoObjectResponse diretamente
+            // Em um caso real, você provavelmente retornaria uma lista de NeoObjectResponse
+            // diretamente
             resp.add(respInterno);
         }
 
@@ -99,12 +100,10 @@ public class NeoController {
 
         NeoObjectResponse resp = neoMapper.toResponse(neo, self);
 
-        return Response.created(self) 
+        return Response.created(self)
                 .entity(resp)
                 .build();
     }
-
-
 
     @PUT
     @Path("/{id}")

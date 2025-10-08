@@ -60,13 +60,34 @@ public class MLTrainingService {
     }
 
     private TrainingResult executarTreinamento(List<S3Object> csvs) throws Exception {
+        // 1️⃣ Consolidar todos os CSVs em um único arquivo
+        Path consolidadoCsv = consolidarCsvs(csvs);
 
-        // 1) Consolida CSVs num arquivo temporário
-        Path consolidadoCsv = Files.createTempFile("neows-consolidated-", ".csv");
+        // 2️⃣ Carregar o arquivo consolidado em um objeto Instances (WEKA)
+        Instances all = carregarDataset(consolidadoCsv);
+
+        // 3️⃣ Separar treino e teste (70/30)
+        StratifiedSplit split = dividirTreinoTeste(all);
+        Instances train = split.train;
+        Instances test = split.test;
+
+        // 4️⃣ Treinar modelo com RandomForest + CostSensitive
+        CostSensitiveClassifier modeloTreinado = treinarModelo(train, all);
+
+        // 5️⃣ Avaliar modelo com dados de teste
+        String avaliacao = avaliarModelo(modeloTreinado, train, test);
+
+        // 6️⃣ Salvar modelo e cabeçalho no MinIO
+        String modelKey = salvarModelo(modeloTreinado, train);
+
+        return new TrainingResult(avaliacao, modelKey);
+    }
+
+    private Path consolidarCsvs(List<S3Object> csvs) throws Exception {
+        Path consolidado = Files.createTempFile("neows-consolidated-", ".csv");
         boolean primeiraLinha = true;
-        int totalLinhas = 0;
 
-        try (var writer = Files.newBufferedWriter(consolidadoCsv)) {
+        try (var writer = Files.newBufferedWriter(consolidado)) {
             for (S3Object obj : csvs) {
                 Log.info("Lendo: " + obj.key());
                 try (InputStream is = s3.getObject(GetObjectRequest.builder()
@@ -74,90 +95,77 @@ public class MLTrainingService {
                         var reader = new java.io.BufferedReader(new java.io.InputStreamReader(is))) {
                     String linha;
                     boolean primeiraLinhaArquivo = true;
+
                     while ((linha = reader.readLine()) != null) {
                         if (primeiraLinhaArquivo) {
                             if (primeiraLinha) {
                                 writer.write(linha);
                                 writer.newLine();
-                                primeiraLinha = false; // cabeçalho 1x
+                                primeiraLinha = false;
                             }
                             primeiraLinhaArquivo = false;
                         } else {
                             writer.write(linha);
                             writer.newLine();
-                            totalLinhas++;
                         }
                     }
                 }
             }
         }
-        Log.infof("Arquivo consolidado criado com %d linhas de dados", totalLinhas);
+        return consolidado;
+    }
 
-        // 2) Carrega em Instances
+    private Instances carregarDataset(Path consolidadoCsv) throws Exception {
         CSVLoader loader = new CSVLoader();
         loader.setSource(consolidadoCsv.toFile());
         Instances all = loader.getDataSet();
         Files.deleteIfExists(consolidadoCsv);
 
-        if (all == null || all.isEmpty())
-            throw new IllegalStateException("Dataset ficou vazio.");
-
-        // IMPORTANTE
-        // define classe
         int classIndex = all.attribute(RESPONSE_COLUMN).index();
         all.setClassIndex(classIndex);
 
-        Log.infof("Dataset: %d instâncias, %d atributos, classe=%s(idx=%d)",
-                all.numInstances(), all.numAttributes(),
-                all.classAttribute().name(), all.classIndex());
+        Log.infof("Dataset: %d instâncias, %d atributos, classe=%s",
+                all.numInstances(), all.numAttributes(), all.classAttribute().name());
 
-        // 3) Split estratificado 70/30
-        long seed = 123L;// MINHA SEMENTE
+        return all;
+    }
+
+    private StratifiedSplit dividirTreinoTeste(Instances all) throws Exception {
+        long seed = 123L;
         double trainRatio = 0.70;
-        var split = stratifiedHoldout(all, trainRatio, seed);
-        Instances train = split.train;
-        Instances test = split.test;
+        return stratifiedHoldout(all, trainRatio, seed);
+    }
 
-        Log.infof("Train=%d, Test=%d (estratificado 70/30)", train.numInstances(), test.numInstances());
-
-        // 4) Treino: RandomForest + CostSensitive
+    private CostSensitiveClassifier treinarModelo(Instances train, Instances all) throws Exception {
         RandomForest rf = new RandomForest();
         rf.setNumIterations(100);
         rf.setSeed(123);
 
-        // ordem real dos valores da classe (não assumimos índices!)
         var clsAttr = all.classAttribute();
-        var ordem = java.util.Collections.list(clsAttr.enumerateValues());
-        Log.info("Ordem dos valores da classe: " + ordem);
-
         int idxFalse = clsAttr.indexOfValue("false");
         int idxTrue = clsAttr.indexOfValue("true");
-        if (idxFalse < 0 || idxTrue < 0) {
-            throw new IllegalStateException("A classe precisa ter os valores 'false' e 'true'.");
-        }
 
-        // CostMatrix 2x2: custo[real][previsto]
         CostMatrix cm = new CostMatrix(2);
-        cm.setElement(idxTrue, idxFalse, COST_FN); // FN: real=true, previsto=false
-        cm.setElement(idxFalse, idxTrue, COST_FP); // FP: real=false, previsto=true
+        cm.setElement(idxTrue, idxFalse, COST_FN);
+        cm.setElement(idxFalse, idxTrue, COST_FP);
         cm.setElement(idxFalse, idxFalse, 0.0);
         cm.setElement(idxTrue, idxTrue, 0.0);
-
-        Log.infof("Custos aplicados: FN=%.2f, FP=%.2f", COST_FN, COST_FP);
 
         CostSensitiveClassifier csc = new CostSensitiveClassifier();
         csc.setClassifier(rf);
         csc.setCostMatrix(cm);
-        csc.setMinimizeExpectedCost(true); // usa prob distrib para minimizar custo esperado
-
+        csc.setMinimizeExpectedCost(true);
         csc.buildClassifier(train);
 
-        // 5) Avaliação (com a mesma cost matrix)
-        Evaluation eval = new Evaluation(train, cm);
+        return csc;
+    }
+
+    private String avaliarModelo(CostSensitiveClassifier csc, Instances train, Instances test) throws Exception {
+        Evaluation eval = new Evaluation(train);
         eval.evaluateModel(csc, test);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\n=== Avaliação Holdout (70/30, Estratificado) / CostSensitive ===\n");
+        sb.append("\n=== Avaliação Holdout (70/30) ===\n");
         sb.append(eval.toSummaryString()).append('\n');
         sb.append(eval.toClassDetailsString()).append('\n');
         sb.append(eval.toMatrixString()).append('\n');
@@ -166,18 +174,18 @@ public class MLTrainingService {
         if (idxTrueVal >= 0) {
             double auc = eval.areaUnderROC(idxTrueVal);
             sb.append(String.format("\nAUC (classe positiva='true'): %.4f\n", auc));
-            Log.infof("AUC(true) = %.4f", auc);
         }
 
-        String evaluationText = sb.toString();
-        Log.info(evaluationText);
+        Log.info(sb.toString());
+        return sb.toString();
+    }
 
-        // 6) Persistir modelo + header
+    private String salvarModelo(CostSensitiveClassifier csc, Instances train) throws Exception {
         Path tmpModel = Files.createTempFile("neows-weka-", ".model");
         Path tmpHeader = Files.createTempFile("neows-weka-", ".header");
 
-        SerializationHelper.write(tmpModel.toString(), csc); // salva o CSC
-        Instances header = new Instances(train, 0); // mesmo schema, sem dados
+        SerializationHelper.write(tmpModel.toString(), csc);
+        Instances header = new Instances(train, 0);
         SerializationHelper.write(tmpHeader.toString(), header);
 
         String ts = String.valueOf(System.currentTimeMillis());
@@ -193,9 +201,7 @@ public class MLTrainingService {
 
         Files.deleteIfExists(tmpModel);
         Files.deleteIfExists(tmpHeader);
-
-        Log.info("Modelo salvo: " + modelKey + " (header: " + headerKey + ")");
-        return new TrainingResult(evaluationText, modelKey);
+        return modelKey;
     }
 
     // ===== split estratificado 70/30 =====

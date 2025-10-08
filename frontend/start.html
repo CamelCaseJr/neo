@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO Monitor - Início</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-icon {
+            font-size: 4rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info h4 {
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info ul {
+            margin-left: 1.5rem;
+            color: #555;
+        }
+        
+        .info li {
+            margin: 0.5rem 0;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e91e63;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">🌍</div>
+        </div>
+        
+        <h1>NEO Monitor</h1>
+        <p class="subtitle">Dashboard Moderno para Monitoramento de Objetos Próximos à Terra</p>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Dashboard</h3>
+                <p>Visão geral com estatísticas e gráficos em tempo real</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🪨</div>
+                <h3>Catálogo NEOs</h3>
+                <p>Listagem completa com filtros e busca avançada</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>Machine Learning</h3>
+                <p>Treinamento e predições de periculosidade</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📈</div>
+                <h3>Analytics</h3>
+                <p>Análises estatísticas e correlações detalhadas</p>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="index.html" class="btn">🚀 Acessar Dashboard</a>
+        </div>
+        
+        <div class="info">
+            <h4>⚙️ Como Usar</h4>
+            <ul>
+                <li><strong>Passo 1:</strong> Certifique-se de que os backends estão rodando:
+                    <ul>
+                        <li><code>neo-core</code> em <code>http://localhost:8080</code></li>
+                        <li><code>modelo-ia</code> em <code>http://localhost:8081</code></li>
+                    </ul>
+                </li>
+                <li><strong>Passo 2:</strong> Sirva este frontend com um servidor HTTP:
+                    <ul>
+                        <li><code>python -m http.server 3000</code></li>
+                        <li>Ou use Live Server do VS Code</li>
+                    </ul>
+                </li>
+                <li><strong>Passo 3:</strong> Acesse <code>http://localhost:3000</code></li>
+                <li><strong>Passo 4:</strong> Explore o dashboard! 🎉</li>
+            </ul>
+        </div>
+        
+        <div class="info" style="margin-top: 1rem; background: #fff3e0; border-left-color: #ff9800;">
+            <h4>📝 Nota Importante</h4>
+            <p>
+                Se encontrar erros de CORS, adicione as seguintes propriedades no <code>application.properties</code> 
+                dos seus serviços backend:
+            </p>
+            <ul>
+                <li><code>quarkus.http.cors=true</code></li>
+                <li><code>quarkus.http.cors.origins=*</code></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

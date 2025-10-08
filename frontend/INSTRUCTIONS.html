@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ Servidor HTTP Necessário</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            max-width: 700px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .warning-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        h1 {
+            color: #e91e63;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .message {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .steps {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+        
+        .steps h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .step {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        code {
+            background: #2d2d2d;
+            color: #a9dc76;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            display: inline-block;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .commands {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .commands .comment {
+            color: #6272a4;
+        }
+        
+        .commands .command {
+            color: #50fa7b;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin: 1rem 0;
+        }
+        
+        .info strong {
+            color: #1976d2;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .center {
+            text-align: center;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-icon">⚠️</div>
+        <h1>Servidor HTTP Necessário</h1>
+        <p class="message">
+            Esta aplicação precisa ser servida através de um servidor HTTP para funcionar corretamente 
+            devido às restrições de CORS e módulos JavaScript.
+        </p>
+        
+        <div class="steps">
+            <h2>🚀 Como Iniciar o Frontend</h2>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">1</span>
+                    Opção Rápida (Windows)
+                </h3>
+                <p>Execute o script batch no terminal:</p>
+                <div class="commands">
+                    <span class="command">start-server.bat</span>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                    Ou clique duas vezes no arquivo <code>start-server.bat</code>
+                </p>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">2</span>
+                    Opção PowerShell (Windows)
+                </h3>
+                <p>Execute no PowerShell:</p>
+                <div class="commands">
+                    <span class="command">.\start-server.ps1</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">3</span>
+                    Opção Python (Qualquer SO)
+                </h3>
+                <p>Execute no terminal:</p>
+                <div class="commands">
+                    <span class="comment"># Navegue até a pasta frontend</span><br>
+                    <span class="command">cd frontend</span><br>
+                    <br>
+                    <span class="comment"># Inicie o servidor</span><br>
+                    <span class="command">python -m http.server 3000</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">4</span>
+                    Opção Node.js
+                </h3>
+                <p>Execute no terminal:</p>
+                <div class="commands">
+                    <span class="command">npx http-server frontend -p 3000</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">5</span>
+                    Opção VS Code (Live Server)
+                </h3>
+                <p>
+                    1. Instale a extensão "Live Server" no VS Code<br>
+                    2. Clique com botão direito em <code>start.html</code><br>
+                    3. Selecione "Open with Live Server"
+                </p>
+            </div>
+        </div>
+        
+        <div class="info">
+            <strong>📋 Depois de iniciar o servidor:</strong><br>
+            Acesse no navegador: <code>http://localhost:3000/start.html</code>
+        </div>
+        
+        <div class="info" style="background: #fff3e0; border-left-color: #ff9800;">
+            <strong>⚙️ Não esqueça dos backends!</strong><br>
+            Certifique-se de que os serviços backend estão rodando:
+            <div class="commands" style="margin-top: 0.5rem;">
+                <span class="comment"># Terminal 1 - neo-core</span><br>
+                <span class="command">cd neo-core && ./mvnw quarkus:dev</span><br>
+                <br>
+                <span class="comment"># Terminal 2 - modelo-ia</span><br>
+                <span class="command">cd modelo-ia && ./mvnw quarkus:dev -Dquarkus.http.port=8081</span>
+            </div>
+        </div>
+        
+        <div class="center">
+            <p style="color: #666; margin-bottom: 1rem;">Precisa de ajuda?</p>
+            <a href="README.md" class="btn">📖 Ver Documentação Completa</a>
+        </div>
+    </div>
+    
+    <script>
+        // Detectar se está sendo servido via HTTP
+        if (window.location.protocol === 'file:') {
+            console.log('%c⚠️ AVISO: Aplicação aberta diretamente do sistema de arquivos!', 
+                'color: #ff9800; font-size: 16px; font-weight: bold;');
+            console.log('%cPor favor, use um servidor HTTP para melhor funcionamento.', 
+                'color: #666; font-size: 14px;');
+        }
+    </script>
+</body>
+</html>

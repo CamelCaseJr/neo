@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - NEO Monitor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🌍</div>
+            <h1>NEO Monitor</h1>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="neos.html" class="nav-item">
+                <span class="nav-icon">🪨</span>
+                <span>NEOs</span>
+            </a>
+            <a href="ml.html" class="nav-item">
+                <span class="nav-icon">🤖</span>
+                <span>Machine Learning</span>
+            </a>
+            <a href="analytics.html" class="nav-item active">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Sistemas Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h2>Analytics Avançado</h2>
+                <p class="subtitle">Análises estatísticas detalhadas dos NEOs</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="loadAnalytics()">
+                    <span>🔄</span>
+                    Atualizar
+                </button>
+            </div>
+        </header>
+
+        <!-- Advanced Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">📏</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="avgDiameter">-</h3>
+                    <p class="stat-label">Diâmetro Médio</p>
+                    <span class="stat-change">metros</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">🚀</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="avgVelocity">-</h3>
+                    <p class="stat-label">Velocidade Média</p>
+                    <span class="stat-change">km/h</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">📍</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="closestDistance">-</h3>
+                    <p class="stat-label">Aproximação Mais Próxima</p>
+                    <span class="stat-change">km</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">🎯</div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="riskScore">-</h3>
+                    <p class="stat-label">Score de Risco</p>
+                    <span class="stat-change">índice calculado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Charts -->
+        <div class="charts-grid">
+            <div class="chart-card wide">
+                <div class="card-header">
+                    <h3>📊 Distribuição de Diâmetros</h3>
+                    <span class="badge">Histograma</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="diameterHistogram"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>🚀 Velocidade vs Periculosidade</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="velocityScatter"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>📍 Distância vs Diâmetro</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distanceScatter"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>⏰ Aproximações por Mês</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthlyApproaches"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="card-header">
+                    <h3>🎯 Matriz de Correlação</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="correlationMatrix"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Table -->
+        <div class="table-card">
+            <div class="card-header">
+                <h3>📋 Estatísticas Detalhadas</h3>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>Todos os NEOs</th>
+                            <th>NEOs Perigosos</th>
+                            <th>NEOs Seguros</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsTableBody">
+                        <tr>
+                            <td colspan="4" class="loading">
+                                <div class="loader"></div>
+                                Carregando estatísticas...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEOs - Lista Completa</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🌍</div>
+            <h1>NEO Monitor</h1>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="neos.html" class="nav-item active">
+                <span class="nav-icon">🪨</span>
+                <span>NEOs</span>
+            </a>
+            <a href="ml.html" class="nav-item">
+                <span class="nav-icon">🤖</span>
+                <span>Machine Learning</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Sistemas Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h2>Near Earth Objects</h2>
+                <p class="subtitle">Catálogo completo de objetos próximos à Terra</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="loadNeos()">
+                    <span>🔄</span>
+                    Atualizar
+                </button>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters-card">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Periculosidade</label>
+                    <select id="filterDanger" class="select-input" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                        <option value="true">Perigosos</option>
+                        <option value="false">Seguros</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por nome</label>
+                    <input type="text" id="filterName" class="text-input" placeholder="Digite o nome..." oninput="applyFilters()">
+                </div>
+
+                <div class="filter-group">
+                    <label>Itens por página</label>
+                    <select id="pageSize" class="select-input" onchange="applyFilters()">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEOs Grid -->
+        <div class="neos-grid" id="neosGrid">
+            <div class="loading-state">
+                <div class="loader"></div>
+                <p>Carregando NEOs...</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousPage()">
+                ← Anterior
+            </button>
+            <div class="pagination-info">
+                <span>Página <strong id="currentPage">1</strong> de <strong id="totalPages">1</strong></span>
+            </div>
+            <button class="btn btn-secondary" id="nextBtn" onclick="nextPage()">
+                Próxima →
+            </button>
+        </div>
+
+        <!-- Detail Modal -->
+        <div id="neoModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Detalhes do NEO</h2>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Content loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/neos.js"></script>
+</body>
+</html>
